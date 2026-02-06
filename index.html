@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>КЪСМЕТ ИЛИ РИСК - ЧОВЕКЪТ И ОБЩЕСТВОТО 4. КЛАС</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
+
+        body { 
+            margin: 0; font-family: 'Montserrat', sans-serif; 
+            background: #f0f0f0; color: #333; overflow: hidden; 
+            display: flex; height: 100vh; 
+        }
+
+        /* НАЧАЛЕН ЕКРАН */
+        #intro-screen { 
+            position: fixed; inset: 0; 
+            background: linear-gradient(180deg, #ff4e50 0%, #f9d423 100%); 
+            z-index: 4000; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; color: white;
+        }
+        .author-tag { position: absolute; bottom: 20px; font-size: 14px; opacity: 0.7; }
+
+        .relief-title {
+            font-size: 42px; font-weight: 900; color: #fff; text-transform: uppercase;
+            text-shadow: 2px 4px 0px rgba(0,0,0,0.2); 
+            background: rgba(0, 0, 0, 0.1);
+            padding: 15px 50px; border-radius: 50px; margin-top: 10px;
+        }
+
+        /* БУТОН ВЪПРОСИТЕЛНА */
+        .rules-trigger {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+            cursor: pointer;
+            margin: 15px 0;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rules-trigger:hover { background: rgba(255, 255, 255, 0.4); transform: scale(1.1); }
+
+        /* МОДАЛ ЗА ПРАВИЛА */
+        #rules-modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            z-index: 5001; align-items: center; justify-content: center; padding: 20px;
+        }
+        .rules-content {
+            background: white; width: 100%; max-width: 600px; border-radius: 20px; padding: 30px; 
+            position: relative; color: #333; text-align: left;
+        }
+
+        /* ПАНЕЛИ */
+        #left-panel { 
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            background: #e6e6e6; border-right: 3px solid #ccc; z-index: 10;
+        }
+        #right-panel { 
+            flex: 2; padding: 20px; display: flex; flex-direction: column; align-items: center; 
+            background: #f0f0f0; position: relative;
+        }
+
+        .scoreboard { 
+            display: grid; grid-template-columns: repeat(2, 1fr); 
+            gap: 25px; width: 95%; margin-top: 30px; 
+        }
+        .team-card { 
+            padding: 25px 15px; border-radius: 20px; text-align: center; 
+            box-shadow: 0 10px 0 rgba(0,0,0,0.15); color: #fff; position: relative;
+            transition: 0.3s;
+        }
+        .team-card.active { transform: scale(1.05); box-shadow: 0 15px 25px rgba(0,0,0,0.2); z-index: 5; }
+        .red { background: #ff4d4d; } .green { background: #4cd137; }
+        .blue { background: #00a8ff; } .yellow { background: #fbc531; }
+        .team-name { font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+        .team-score { background: white; color: #333; border-radius: 12px; font-size: 40px; font-weight: 900; padding: 10px 30px; display: inline-block; }
+
+        .white-glow-btn {
+            padding: 18px 45px; font-size: 22px; font-weight: 700;
+            background: #fff; color: #333; border: none; border-radius: 50px; 
+            cursor: pointer; box-shadow: 0 6px 0 #bbb; transition: 0.2s;
+        }
+        .white-glow-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #bbb; }
+        .help-btn {
+            background: #6c5ce7; color: white; padding: 12px 30px; border-radius: 50px;
+            cursor: pointer; border: none; font-weight: bold; margin-top: 20px; box-shadow: 0 4px 0 #4834d4;
+        }
+
+        #wheel-container { position: relative; width: 420px; height: 420px; }
+        canvas { width: 100%; height: 100%; border-radius: 50%; border: 12px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        #pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid #333; z-index: 20; }
+
+        #modal-overlay { 
+            position: fixed; top: 0; right: 0; bottom: 0; width: 66.66%; 
+            background: rgba(255,255,255,0.98); display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 3000; box-shadow: -10px 0 30px rgba(0,0,0,0.2); padding: 40px; box-sizing: border-box;
+        }
+        #question-box { width: 90%; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .option-btn { display: block; width: 100%; padding: 18px; margin: 10px 0; font-size: 20px; font-weight: 700; border: none; border-radius: 15px; cursor: pointer; background: #eee; box-shadow: 0 6px 0 #ccc; }
+        #timer-display { font-size: 40px; font-weight: 900; color: #ff4d4d; margin-bottom: 10px; display: none; font-variant-numeric: tabular-nums; }
+
+        #quick-end { position: fixed; top: 10px; right: 10px; opacity: 0.1; cursor: pointer; font-size: 12px; z-index: 5000; padding: 5px; }
+        #quick-end:hover { opacity: 1; background: #ddd; }
+
+        #end-screen { 
+            position: fixed; inset: 0; background: #f8f9fa; z-index: 4500; 
+            display: none; flex-direction: column; align-items: center; 
+            justify-content: center; padding-top: 0px; 
+        }
+        
+        .podium-container { 
+            display: flex; align-items: flex-end; justify-content: center; 
+            gap: 20px; width: 90%; height: 60vh; margin-top: 50px; 
+        }
+
+        .step { 
+            width: 280px; display: flex; flex-direction: column; 
+            align-items: center; border-radius: 30px 30px 0 0; 
+            font-weight: 900; color: #fff; position: relative; 
+            padding-top: 20px; padding-bottom: 20px;
+            justify-content: flex-start; 
+        }
+        .rank-label { display: none; } 
+        .trophy { font-size: 80px; margin-bottom: 10px; }
+        .podium-name { font-size: 28px; margin-bottom: 10px; text-transform: uppercase; text-align: center; width: 95%; }
+        .podium-score { font-size: 36px; background: rgba(0,0,0,0.2); padding: 5px 30px; border-radius: 15px; }
+    </style>
+</head>
+<body>
+
+    <div id="intro-screen">
+        <div class="relief-title">КЪСМЕТ ИЛИ РИСК</div>
+        <h2 style="margin: 20px 0 5px 0;">ЧОВЕКЪТ И ОБЩЕСТВОТО - 4. клас</h2>
+        
+        <button class="rules-trigger" onclick="toggleRules()">?</button>
+        
+        <button class="white-glow-btn" onclick="startGame()">ЗАПОЧНИ ИГРА</button>
+        <div class="author-tag">Изготвил: Дочка Кючукова </div>
+    </div>
+
+    <div id="rules-modal">
+        <div class="rules-content">
+            <button onclick="toggleRules()" style="position: absolute; top: 15px; right: 15px; border: none; background: none; font-size: 24px; cursor: pointer;">✕</button>
+            <h2 style="color: #ff4e50; margin-top: 0; text-align: center;">📜 Правила на играта</h2>
+            <div style="line-height: 1.6;">
+                <p><strong>• Цел:</strong> Съберете най-много точки чрез верни отговори.</p>
+                <p><strong>• Колело:</strong> Въртете за точки или бонус сектор.</p>
+                <p><strong>• 🛡️ Защита:</strong> При верен отговор получавате щит срещу Банкрут или Кражба.</p>
+                <p><strong>• 💰 Крадец:</strong> При верен отговор вземате 200т. от друг отбор.</p>
+                <p><strong>• 🤝 Помощ:</strong> Срещу 100т. получавате помощ за текущия въпрос.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="quick-end" onclick="endGame()">КЪМ ФИНАЛ</div>
+
+    <div id="left-panel">
+        <div id="wheel-container">
+            <div id="pointer"></div>
+            <canvas id="wheel" width="500" height="500"></canvas>
+        </div>
+        <div style="margin-top: 40px;">
+            <button id="main-action-btn" class="white-glow-btn" onclick="startSpin()">ВЪРТИ КОЛЕЛОТО!</button>
+        </div>
+    </div>
+
+    <div id="right-panel">
+        <div class="relief-title" style="color: #333; background: none; text-shadow: none; font-size: 30px;">ИГРАЛНО ПОЛЕ</div>
+        <div id="turn-indicator" style="margin: 10px 0; font-size: 22px; font-weight: 900; color: #555;">РЕД Е НА: ЛЪВОВЕ</div>
+        <div class="scoreboard">
+            <div id="team-0" class="team-card red"><div class="team-name">ДУНАВ <span id="shield-0"></span></div><div id="score-0" class="team-score">0</div></div>
+            <div id="team-1" class="team-card green"><div class="team-name">БАЛКАН <span id="shield-1"></span></div><div id="score-1" class="team-score">0</div></div>
+            <div id="team-2" class="team-card blue"><div class="team-name">ТРАКИЯ <span id="shield-2"></span></div><div id="score-2" class="team-score">0</div></div>
+            <div id="team-3" class="team-card yellow"><div class="team-name">ПИРИН <span id="shield-3"></span></div><div id="score-3" class="team-score">0</div></div>
+        </div>
+        <div id="round-info" style="position: absolute; bottom: 20px; font-weight: bold; color: #999;">Въпроси: <span id="q-count">0</span> / 40</div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="timer-display">0:30</div>
+        <div id="question-box">
+            <h1 id="q-text" style="font-size: 28px; margin-bottom: 20px;"></h1>
+            <div id="options" style="width: 100%;"></div>
+            <button id="help-btn" class="help-btn" onclick="useHelp()">🤝 ПОМОЩ (-100т.)</button>
+            <div id="info-box" style="display:none; margin: 15px auto; background:#e3f2fd; padding:15px; border-radius:15px;"></div>
+            <button id="next-btn" class="white-glow-btn" style="display:none; margin-top:20px; background: #333; color: white;" onclick="closeModal()">ПРОДЪЛЖИ</button>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <button class="white-glow-btn" onclick="location.reload()">НОВА ИГРА</button>
+        <div class="relief-title" style="color: #333; background: none; text-shadow: none; font-size: 60px; letter-spacing: 5px;">КЛАСИРАНЕ</div>
+        <div class="podium-container" id="podium"></div>
+    </div>
+
+<script>
+    // ПРАВИЛА
+    function toggleRules() {
+        const m = document.getElementById('rules-modal');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    // ВАШАТА БАЗА ДАННИ
+    const normalQs = [
+    // ГЕОГРАФСКО ПОЛОЖЕНИЕ И ГРАНИЦИ
+    { q: "В коя част на Европа се намира България?", a: ["Северна", "Югоизточна", "Западна"], c: 1, info: "💡 ФАКТ: България се намира на Балканския полуостров в Югоизточна Европа." },
+    { q: "Коя е северната граница на България?", a: ["Река Дунав", "Черно море", "Планината Рила"], c: 0, info: "💡 ГРАНИЦА: По-голямата част от северната ни граница е водна – река Дунав." },
+    { q: "С коя държава граничим на изток?", a: ["Гърция", "Сърбия", "Нямаме сухопътна граница"], c: 2, info: "💡 ИЗТОК: На изток България граничи единствено с Черно море." },
+    { q: "Коя е най-високата планина в България и на Балканите?", a: ["Пирин", "Рила", "Стара планина"], c: 1, info: "💡 ПЪРВЕНЕЦ: Връх Мусала в Рила е висок 2925 метра." },
+    { q: "Как се нарича най-дългата планина в България?", a: ["Родопи", "Стара планина", "Витоша"], c: 1, info: "💡 ИМЕ: Стара планина се нарича още Балканът и дава името на целия ни полуостров." },
+
+    // ДУНАВСКА РАВНИНА
+    { q: "Коя е най-голямата низинна област в Северна България?", a: ["Горнотракийска низина", "Дунавска равнина", "Софийско поле"], c: 1, info: "💡 ЖИТНИЦА: Тук се отглеждат най-много пшеница и царевица." },
+    { q: "Коя голяма река тече през Дунавската равнина и се влива в Дунав?", a: ["Марица", "Искър", "Места"], c: 1, info: "💡 ВОДИ: Река Искър е най-дългата река, която тече изцяло на територията на България." },
+    { q: "Кой град НЕ се намира на река Дунав?", a: ["Русе", "Видин", "Плевен"], c: 2, info: "💡 ГЕОГРАФИЯ: Плевен се намира във вътрешността на Дунавската равнина, а не на самия бряг." },
+    { q: "Каква е повърхността на Дунавската равнина?", a: ["Планинска", "Хълмисто-платовидна", "Напълно плоска"], c: 1, info: "💡 РЕЛЕФ: Тя не е съвсем плоска, а е набраздена от речни долини и плата." },
+
+    // СТАРОПЛАНИНСКА ОБЛАСТ
+    { q: "Кой е най-високият връх в Стара планина?", a: ["връх Ботев", "връх Вихрен", "връх Шипка"], c: 0, info: "💡 ВИСОЧИНА: Връх Ботев е висок 2376 метра." },
+    { q: "Кой проход в Стара планина е символ на героичните боеве за свобода?", a: ["Петрохан", "Шипка", "Витиня"], c: 1, info: "💡 ИСТОРИЯ: Там се намира Паметникът на свободата." },
+    { q: "Какво се добива в Предбалкана?", a: ["Злато", "Варовик и въглища", "Диаманти"], c: 1, info: "💡 БОГАТСТВА: Предбалкана е богат на строителни материали и полезни изкопаеми." },
+    { q: "Къде се намират прочутите Белоградчишки скали?", a: ["В Родопите", "В Западна Стара планина", "На Витоша"], c: 1, info: "💡 ПРИРОДА: Тези скални фигури са едно от чудесата на България." },
+
+    // ПРЕХОДНА ОБЛАСТ
+    { q: "Коя низина е известна като 'Райската градина' на България?", a: ["Горнотракийската", "Дунавската", "Низината на река Струма"], c: 0, info: "💡 ПЛОДОРОДИЕ: Тук климатът е мек и се отглеждат ориз, памук, плодове и зеленчуци." },
+    { q: "В коя долина се отглежда маслодайната роза?", a: ["Софийската", "Розовата долина", "Струмската"], c: 1, info: "💡 СИМВОЛ: България е сред най-големите производители на розово масло в света." },
+    { q: "Коя планина се намира точно до София?", a: ["Люлин", "Витоша", "Средна гора"], c: 1, info: "💡 СТОЛИЦА: Витоша е първият парк на Балканския полуостров." },
+    { q: "Коя е най-голямата река в Южна България?", a: ["Янтра", "Марица", "Дунав"], c: 1, info: "💡 ПЪТ: Марица тече през Горнотракийската низина и се влива в Бяло море." },
+
+    // РИЛО-РОДОПСКА ОБЛАСТ
+    { q: "Коя планина е известна със своите 'очи' – Седемте езера?", a: ["Пирин", "Рила", "Родопи"], c: 1, info: "💡 КРАСОТА: Езерата са с ледников произход и имат имена според формата си." },
+    { q: "Кой е най-високият връх в Пирин?", a: ["Мусала", "Вихрен", "Руен"], c: 1, info: "💡 ПРИРОДА: Вихрен е изграден от мрамор и е втори по височина в България." },
+    { q: "Коя планина е родината на легендарния певец Орфей?", a: ["Стара планина", "Родопи", "Странджа"], c: 1, info: "💡 ЛЕГЕНДА: Родопите са наричани 'Планината с широка душа'." },
+    { q: "Кое е най-старото иглолистно дърво в България, намиращо се в Пирин?", a: ["Байкушевата мура", "Старият дъб", "Кривото дърво"], c: 0, info: "💡 ВЪЗРАСТ: Тя е на повече от 1300 години!" },
+
+    // ЧЕРНОМОРСКО КРАЙБРЕЖИЕ
+    { q: "Кой е най-големият град на нашето Черноморие?", a: ["Бургас", "Варна", "Созопол"], c: 1, info: "💡 МОРЕ: Варна е наричана 'Морската столица на България'." },
+    { q: "Кое езеро край Бургас е най-голямото в България?", a: ["Панчарево", "Бургаското езеро", "Сребърна"], c: 1, info: "💡 БОГАТСТВО: Бургаските езера са важно място за почивка на прелетните птици." },
+    { q: "Кой нос разделя крайбрежието ни на Северно и Южно?", a: ["нос Калиакра", "нос Емине", "нос Галата"], c: 1, info: "💡 ГЕОГРАФИЯ: На нос Емине завършва Стара планина." },
+
+    // ЕКОЛОГИЯ И ЗАЩИТЕНИ ОБЕКТИ
+    { q: "Кой резерват е включен в списъка на ЮНЕСКО заради пеликаните?", a: ["Камчия", "Сребърна", "Ропотамо"], c: 1, info: "💡 ПТИЦИ: Езерото Сребърна е 'дом' на къдроглавия пеликан." },
+    { q: "Защо е важно да опазваме природата чисто?", a: ["За да имаме ресурси", "Заради здравето ни", "И двете"], c: 2, info: "💡 ГРИЖА: Чистата природа означава чиста вода, въздух и храна за всички." },
+
+    // (Добавени още въпроси за общ брой 80)
+    { q: "Кое море мие бреговете на България?", a: ["Средиземно", "Бяло", "Черно"], c: 2, info: "💡 МОРЕ: Черно море е слабо солено и е безопасно за плуване." },
+    { q: "Кой град е известен като 'Градът на липите'?", a: ["Стара Загора", "Хасково", "Ямбол"], c: 0, info: "💡 ПРЕХОДНА ОБЛАСТ: Стара Загора се намира в Горнотракийската низина." },
+    { q: "Какво означава понятието 'природно богатство'?", a: ["Златото в банките", "Водите, почвите и горите", "Парите на държавата"], c: 1, info: "💡 БОГАТСТВА: Това са даровете на природата, които използваме." },
+    { q: "В коя планина се намира Рилският манастир?", a: ["Пирин", "Рила", "Витоша"], c: 1, info: "💡 КУЛТУРА: Той е най-големият и известен манастир у нас." },
+    { q: "Как се нарича вятърът, който духа от планината към низината?", a: ["Бриз", "Фьон", "Мусон"], c: 1, info: "💡 ВРЕМЕ: Фьонът е топъл вятър, който често причинява топене на снеговете." },
+    { q: "В коя посока се намира Турция спрямо България?", a: ["Югоизток", "Северозапад", "Север"], c: 0, info: "💡 СЪСЕДИ: С Турция имаме обща граница на югоизток." },
+    { q: "Коя е най-ниската точка на България?", a: ["Нивото на Черно море", "Долината на Струма", "Дунавската равнина"], c: 0, info: "💡 ВИСОЧИНА: Нивото на морето се приема за 0 метра." },
+    { q: "Кой град е център на производството на парфюми от рози?", a: ["Казанлък", "Ловеч", "Шумен"], c: 0, info: "💡 РОЗИ: Казанлък се намира в Розовата долина." },
+    { q: "Кое е най-високото езеро в Рила?", a: ["Окото", "Сълзата", "Близнака"], c: 1, info: "💡 ЕЗЕРА: Сълзата се намира на 2535 м височина." },
+    { q: "Къде се отглеждат най-много слънчоглед и пшеница?", a: ["В Родопите", "В Добруджа", "На Витоша"], c: 1, info: "💡 ДОБРУДЖА: Тя е част от Дунавската равнина и е много плодородна." },
+    { q: "Кое животно е символ на Стара планина?", a: ["Делфин", "Дива коза", "Камила"], c: 1, info: "💡 ЖИВОТНИ: Дивата коза обитава високите и скалисти части." },
+    { q: "Как се наричат подземните води, които са топли?", a: ["Речни", "Минерални", "Морски"], c: 1, info: "💡 ЗДРАВЕ: България е една от най-богатите страни на минерални извори." },
+    { q: "В кой град се провежда фестивалът на розата?", a: ["Карлово", "София", "Пловдив"], c: 0, info: "💡 ПРАЗНИК: Карлово и Казанлък се състезават за най-красив празник на розата." },
+    { q: "Коя река прави границата ни с Румъния?", a: ["Искър", "Марица", "Дунав"], c: 2, info: "💡 РЕКА: Дунав е втората по дължина река в Европа." },
+    { q: "Кое птиче езеро се намира край град Балчик?", a: ["Поморийско", "Шабленско", "Дуранкулашко"], c: 2, info: "💡 ПРИРОДА: То е важен пункт за мигриращите птици (Виа Понтика)." },
+    { q: "Коя е най-дългата река, извираща от България?", a: ["Марица", "Искър", "Янтра"], c: 1, info: "💡 ИСКЪР: Тя тече от Рила до Дунав." },
+    { q: "В коя област се намира град Пловдив?", a: ["Дунавска равнина", "Преходна област", "Черноморско крайбрежие"], c: 1, info: "💡 ПЛОВДИВ: Градът е разположен в Горнотракийската низина." },
+    { q: "Кой град е известен с минералните си извори в Пирин?", a: ["Сандански", "Видин", "Габрово"], c: 0, info: "💡 ЗДРАВЕ: Сандански е един от най-слънчевите градове у нас." },
+    { q: "Кое е най-голямото пристанище на Северното Черноморие?", a: ["Варна", "Бургас", "Несебър"], c: 0, info: "💡 ТЪРГОВИЯ: Варна е ключов транспортен център." },
+    { q: "Какво е характерно за климата на Родопите?", a: ["Винаги е горещо", "Прохладно лято и мека зима", "Няма зима"], c: 1, info: "💡 КЛИМАТ: Планинският въздух в Родопите се счита за много лечебен." },
+    { q: "Кой язовир е разположен в Рила и е много висок?", a: ["Белмекен", "Кърджали", "Искър"], c: 0, info: "💡 ЕНЕРГИЯ: Белмекен се използва за производство на ток." },
+    { q: "Коя планина е на границата ни с Гърция?", a: ["Стара планина", "Родопи", "Пирин"], c: 1, info: "💡 ГРАНИЦА: Родопите заемат голяма част от южната ни граница." },
+    { q: "Къде се намира пещерата Магурата?", a: ["В Родопите", "В Западна Стара планина", "На Витоша"], c: 1, info: "💡 ПЕЩЕРА: Известна е със своите уникални скални рисунки." },
+    { q: "Кой пролив свързва Черно море със Средиземно?", a: ["Босфора", "Гибралтар", "Суец"], c: 0, info: "💡 МОРЕ: Чрез Босфора нашите кораби излизат в океана." },
+    { q: "В кой град се намира Националният музей на текстилната индустрия?", a: ["Сливен", "Бургас", "Ловеч"], c: 0, info: "💡 ИНДУСТРИЯ: Сливен е известен като града на стоте войводи и текстила." },
+    { q: "Коя е най-високата точка на Средна гора?", a: ["връх Богдан", "връх Бузлуджа", "връх Ком"], c: 0, info: "💡 ПЛАНИНА: Връх Богдан е висок 1604 метра." },
+    { q: "Коя река тече през Велико Търново?", a: ["Янтра", "Тунджа", "Осъм"], c: 0, info: "💡 КРАСОТА: Река Янтра прави красиви завои (меандри) из града." },
+    { q: "Коя планина е най-ниската от Рило-Родопския масив?", a: ["Пирин", "Рила", "Родопи"], c: 2, info: "💡 РЕЛЕФ: Родопите не са толкова високи и остри като Рила и Пирин." },
+    { q: "Кое растение се среща само в Пирин?", a: ["Роза", "Еделвайс", "Байкушева мура"], c: 1, info: "💡 РЯДКОСТ: Еделвайсът расте по високите скалисти места." },
+    { q: "Какво се произвежда в Девня?", a: ["Коли", "Химически продукти", "Дрехи"], c: 1, info: "💡 ПРОМИШЛЕНОСТ: Девня е голям център на химическата индустрия." },
+    { q: "Кой е основният отрасъл в Дунавската равнина?", a: ["Земеделие", "Риболов", "Добив на нефт"], c: 0, info: "💡 ХРАНА: Тук са най-големите ниви на България." },
+    { q: "Кое пристанище е най-голямо в Южното Черноморие?", a: ["Бургас", "Царево", "Созопол"], c: 0, info: "💡 ТРАНСПОРТ: Пристанище Бургас е едно от най-модерните." },
+    { q: "Кой град се намира в подножието на Сините камъни?", a: ["Сливен", "Хасково", "Варна"], c: 0, info: "💡 ПРИРОДА: Природният парк 'Сините камъни' е емблематичен за Сливен." },
+    { q: "Коя планина се намира на запад от София?", a: ["Люлин", "Рила", "Родопи"], c: 0, info: "💡 ГРАД: Люлин планина е малка, но важна за климата на София." },
+    { q: "Кое е най-дълбокото езеро в България?", a: ["Окото", "Снежното", "Рабиша"], c: 0, info: "💡 ЕЗЕРА: Окото в Рила е дълбоко цели 37.5 метра." },
+    { q: "Коя област граничи с Македония?", a: ["Източна", "Западна", "Южна"], c: 1, info: "💡 ГРАНИЦИ: На запад граничим със Северна Македония и Сърбия." },
+    { q: "Кой град е известен с паметника на Св. Богородица?", a: ["Хасково", "Плевен", "Пловдив"], c: 0, info: "💡 ГИНЕС: Статуята в Хасково е най-високата в света на Дева Мария." },
+    { q: "Коя планина е разделена на две части от река Искър?", a: ["Стара планина", "Витоша", "Рила"], c: 0, info: "💡 ИСКЪРСКИ ПРОЛОМ: Реката е прокопала невероятен каньон през планината." },
+    { q: "Какво е характерно за Черно море?", a: ["Много е солено", "Слабо солено е", "Няма никаква сол"], c: 1, info: "💡 ВОДА: Малката соленост се дължи на многото вливащи се реки." },
+    { q: "Кой град е известен като 'Градът на хумора'?", a: ["Габрово", "Троян", "Елена"], c: 0, info: "💡 ТРАДИЦИЯ: Габрово е столицата на хумора и сатирата." },
+    { q: "Кое е основното богатство на планините?", a: ["Морски пясък", "Горите", "Нефт"], c: 1, info: "💡 ПРИРОДА: Горите ни осигуряват дървесина и пречистват въздуха." },
+    { q: "Къде се намира Мадарският конник?", a: ["Близо до Шумен", "Край Варна", "В София"], c: 0, info: "💡 ИСТОРИЯ: Той е символ на мощта на ранната българска държава." },
+    { q: "Коя е най-високата планина в Западна България?", a: ["Осогово", "Руй", "Рила"], c: 2, info: "💡 ГЕОГРАФИЯ: Рила доминира в Югозападна България." },
+    { q: "Какво се отглежда в района на Сандански и Петрич?", a: ["Картофи", "Ранни зеленчуци и южни плодове", "Пшеница"], c: 1, info: "💡 ТОПЛИНА: Тук климатът е най-близък до средиземноморския." },
+    { q: "Коя планина наричаме 'Свещена'?", a: ["Рила", "Стара планина", "Пирин"], c: 0, info: "💡 ИМЕ: Името Рила идва от тракийски и означава 'многоводна планина'." },
+    { q: "Как се наричат езерата, образувани от ледници?", a: ["Речни", "Ледникови", "Язовири"], c: 1, info: "💡 ПРОИЗХОД: Такива са почти всички високи езера в Рила и Пирин." },
+    { q: "В кой град се намира Панорама 'Плевенска епопея'?", a: ["Плевен", "Ловеч", "Враца"], c: 0, info: "💡 ИСТОРИЯ: Посветена е на освобождението на града през 1877 г." },
+    { q: "Кое дърво е символ на здраве и дълголетие в България?", a: ["Палма", "Дъб", "Бор"], c: 1, info: "💡 СИМВОЛ: Дъбът е едно от най-често срещаните широколистни дървета." },
+    { q: "Коя река минава през град Видин?", a: ["Осъм", "Дунав", "Лом"], c: 1, info: "💡 КРЕПОСТ: Във Видин се намира известната крепост 'Баба Вида'." },
+    { q: "Коя е най-източната точка на България?", a: ["нос Шабла", "Бургас", "нос Калиакра"], c: 0, info: "💡 ГЕОГРАФИЯ: На нос Шабла се намира и най-старият фар." },
+    { q: "Кой град е известен с производството на захар?", a: ["Лом", "Горна Оряховица", "Пазарджик"], c: 1, info: "💡 ХРАНА: Градът е важен железопътен и промишлен център." },
+    { q: "Коя е най-голямата планина в Източните Родопи?", a: ["Странджа", "Източни Родопи", "Сакар"], c: 1, info: "💡 РЕЛЕФ: Източните Родопи са по-ниски от Западните." },
+    { q: "Какво се добива в Родопите?", a: ["Оловно-цинкови руди", "Сол", "Петрол"], c: 0, info: "💡 РЕСУРСИ: Тези руди са важни за металургията." },
+    { q: "Кое езеро е известно с лечебната си кал?", a: ["Поморийското", "Панчарево", "Искър"], c: 0, info: "💡 ЗДРАВЕ: Поморие е известен балнеолечебен курорт." }
+];
+    const hardQs = [
+        const hardQs = [
+    { q: "Как се наричат високите части на планините, където няма гори?", a: ["Полета", "Алпийски пасища", "Степи"], c: 1, info: "💡 РЕЛЕФ: Там растат само ниски треви и храсти заради студа." },
+    { q: "Какъв е произходът на Черно море според учените?", a: ["Било е голямо езеро", "Винаги е било море", "Било е река"], c: 0, info: "💡 НАУКА: Преди хиляди години то е било сладководно езеро." },
+    { q: "Как се нарича вятърът, който сменя посоката си два пъти в денонощието по крайбрежието?", a: ["Бриз", "Мусон", "Циклон"], c: 0, info: "💡 МОРЕ: Дневният бриз духа от морето към брега, а нощният – обратно." },
+    { q: "Коя е единствената река в България, която е плавателна?", a: ["Марица", "Дунав", "Искър"], c: 1, info: "💡 ТРАНСПОРТ: Само по Дунав могат да се движат големи кораби." },
+    { q: "Как се нарича най-високият водопад в България (Райското пръскало)?", a: ["В Родопите", "В Стара планина", "В Рила"], c: 1, info: "💡 ВОДА: Намира се точно под връх Ботев в Стара планина." },
+    { q: "Кой тип почви са най-плодородните в България?", a: ["Черноземни", "Песъчливи", "Глинести"], c: 0, info: "💡 ЗЕМЕДЕЛИЕ: Черноземите се намират основно в Дунавската равнина." },
+    { q: "Кой проход свързва Северна и Южна България в най-високата си точка?", a: ["Траянови врата", "Проходът на Републиката", "Шипка"], c: 2, info: "💡 ПЪТ: Шипченският проход е стратегически важен." },
+    { q: "Кое е най-голямото по площ поле в Задбалканските котловини?", a: ["Карловското", "Софийското", "Казанлъшкото"], c: 1, info: "💡 СТОЛИЦА: Софийското поле е заето от нашата столица." },
+    { q: "Как се нарича защитена територия, в която е забранена всякаква човешка дейност?", a: ["Национален парк", "Резерват", "Ботаническа градина"], c: 1, info: "💡 ОПАЗВАНЕ: В резерватите природата се пази в нейния естествен вид." },
+    { q: "Кое е най-дълбокото място в Черно море?", a: ["1200 метра", "2212 метра", "500 метра"], c: 1, info: "💡 ДЪЛБОЧИНА: То е много по-дълбоко, отколкото много хора предполагат!" },
+    { q: "Как се нарича специфичният релеф в Добруджа, образуван от вятъра?", a: ["Дюни", "Льосово плато", "Каньон"], c: 1, info: "💡 ГЕОЛОГИЯ: Льосът е прахообразен материал, натрупан от ветровете." },
+    { q: "Кой е най-големият остров в българската част на река Дунав?", a: ["Белене", "Козлодуй", "Света Анастасия"], c: 0, info: "💡 ОСТРОВ: Остров Белене (Персин) е голям и е част от природен парк." },
+    { q: "Коя планина се нарича 'Красавицата на Югозапада'?", a: ["Пирин", "Рила", "Славянка"], c: 0, info: "💡 ИМЕ: Името Пирин идва от бога на гръмотевиците Перун." },
+    { q: "Какво представлява Каменната гора край Варна (Побитите камъни)?", a: ["Изкуствени колони", "Природни скални образувания", "Останки от сгради"], c: 1, info: "💡 ФЕНОМЕН: Те са кухи каменни стълбове, образувани преди милиони години." },
+    { q: "Как се нарича най-голямата пещера в България по дължина?", a: ["Духлата", "Магурата", "Леденика"], c: 0, info: "💡 ПЕЩЕРА: Духлата се намира във Витоша и е дълга над 18 км." },
+    { q: "Коя планина е най-стара като геоложки произход в България?", a: ["Стара планина", "Родопите", "Рила"], c: 1, info: "💡 ИСТОРИЯ: Родопите са част от най-старата суша на Балканите." },
+    { q: "Как се нарича въздушната маса, която носи дъжд от запад?", a: ["Антициклон", "Циклон", "Бриз"], c: 1, info: "💡 ВРЕМЕ: Атлантическите циклони са основен източник на валежи у нас." },
+    { q: "Кой град е известен с находищата си на медна руда в Преходната област?", a: ["Панагюрище", "Стара Загора", "Ямбол"], c: 0, info: "💡 МЕД: Тук се намират едни от най-големите медни мини." },
+    { q: "Как се нарича границата, над която не растат дървета в планината?", a: ["Горна граница на гората", "Снежна линия", "Горска пътека"], c: 0, info: "💡 ПРИРОДА: Над нея условията са твърде сурови за дърветата." },
+    { q: "Кой е единственият действащ гейзер в България и на Балканите?", a: ["В Сапарева баня", "В Девин", "Във Велинград"], c: 0, info: "💡 ЧУДО: Гейзерът в Сапарева баня изхвърля гореща вода на всеки няколко секунди." }
+];
+
+    const sectors = [
+        { label: "500", val: 500, col: "#ff4d4d" }, 
+        { label: "БАНКРУТ", val: "B", col: "#333" }, 
+        { label: "200", val: 200, col: "#4cd137" }, 
+        { label: "КРАДЕЦ", val: "T", col: "#fbc531" },
+        { label: "300", val: 300, col: "#00a8ff" }, 
+        { label: "1000", val: 1000, col: "#9c88ff" },
+        { label: "ЗАЩИТА", val: "S", col: "#487eb0" }, 
+        { label: "400", val: 400, col: "#e67e22" }
+    ];
+
+    let poolNormal = [...normalQs], poolHard = [...hardQs];
+    let scores = [0, 0, 0, 0], shields = [false, false, false, false], teamNames = ["ЛЪВОВЕ", "ОРЛИ", "КОННИЦИ", "БОЛЯРИ"];
+    let turnIdx = 0, currentStake = 0, totalQuestionsAsked = 0, currentRotation = 0, timerInterval, timeLeft = 30;
+
+    function startGame() { document.getElementById('intro-screen').style.display = 'none'; updateUI(); }
+
+    const canvas = document.getElementById('wheel'), ctx = canvas.getContext('2d');
+    function drawWheel(angle = 0) {
+        const arc = (2 * Math.PI) / sectors.length;
+        ctx.clearRect(0,0,500,500);
+        sectors.forEach((s, i) => {
+            ctx.fillStyle = s.col; ctx.beginPath(); ctx.moveTo(250, 250);
+            ctx.arc(250, 250, 240, i * arc + angle, (i + 1) * arc + angle); ctx.fill();
+            ctx.save(); ctx.translate(250, 250); ctx.rotate(i * arc + arc/2 + angle);
+            ctx.fillStyle = "white"; ctx.textAlign = "right"; ctx.font = "bold 25px Montserrat";
+            ctx.fillText(s.label, 220, 10); ctx.restore();
+        });
+    }
+    drawWheel();
+
+    function startSpin() {
+        document.getElementById('main-action-btn').disabled = true;
+        let speed = 30 + Math.random() * 20;
+        const interval = setInterval(() => {
+            currentRotation += speed; speed *= 0.98; drawWheel(currentRotation * Math.PI / 180);
+            if(speed < 0.2) {
+                clearInterval(interval);
+                const degrees = (currentRotation % 360);
+                const sectorArc = 360 / sectors.length;
+                const index = Math.floor((360 - (degrees % 360) + 270) % 360 / sectorArc);
+                setTimeout(() => { handleSector(sectors[index]); }, 500);
+            }
+        }, 20);
+    }
+
+    function handleSector(s) {
+        currentStake = s.val;
+        const modal = document.getElementById('modal-overlay'), qText = document.getElementById('q-text'), opt = document.getElementById('options'), nextBtn = document.getElementById('next-btn'), helpBtn = document.getElementById('help-btn'), infoBox = document.getElementById('info-box');
+        modal.style.display = 'flex'; opt.innerHTML = ''; nextBtn.style.display = 'none'; infoBox.style.display = 'none'; document.getElementById('timer-display').style.display = 'none';
+        helpBtn.style.display = 'block'; helpBtn.onclick = useHelp;
+
+        if(s.val === 'B') {
+            helpBtn.style.display = 'none';
+            if(shields[turnIdx]) {
+                qText.innerHTML = "🛡️ ЗАЩИТАТА ВИ СПАСИ ОТ БАНКРУТ!"; shields[turnIdx] = false; nextBtn.style.display = 'block'; nextBtn.onclick = closeModal;
+            } else {
+                qText.innerText = "🚨 БАНКРУТ! Какво избирате?";
+                opt.innerHTML = `<button class="option-btn" onclick="scores[turnIdx]=0; closeModal();">ГУБЯ ВСИЧКО</button><button class="option-btn" onclick="survivalChallenge()">СПАСЕНИЕ СЪС СЛОЖЕН ВЪПРОС</button>`;
+            }
+        } else if(s.val === 'T') { qText.innerText = "КРАДЕЦ! Отговори на въпрос, за да откраднеш!"; showQuestion(true, 'steal');
+        } else if(s.val === 'S') { qText.innerText = "ЗАЩИТА! Отговори на въпрос, за да получиш щит!"; showQuestion(true, 'shield');
+        } else { showQuestion(); }
+    }
+
+    function survivalChallenge() { document.getElementById('options').innerHTML = ''; document.getElementById('timer-display').style.display = 'block'; document.getElementById('help-btn').style.display = 'block'; startTimer(); showQuestion(true, 'survival'); }
+
+    function showQuestion(isSpec = false, type = '') {
+        let pool = (type === 'survival') ? poolHard : poolNormal;
+        if(pool.length === 0) { 
+             // Ако текущият пул свърши, приключваме играта
+             document.getElementById('q-text').innerText = "Всички въпроси от тази категория са изчерпани!";
+             document.getElementById('next-btn').style.display = 'block';
+             document.getElementById('next-btn').onclick = endGame;
+             return;
+        }
+        const rIdx = Math.floor(Math.random() * pool.length); const q = pool[rIdx]; pool.splice(rIdx, 1);
+        document.getElementById('q-text').innerText = q.q; const opt = document.getElementById('options'); opt.innerHTML = '';
+        q.a.forEach((txt, i) => {
+            const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = txt;
+            btn.onclick = () => {
+                clearInterval(timerInterval); const all = document.querySelectorAll('.option-btn'); all.forEach(b => b.disabled = true); document.getElementById('help-btn').style.display = 'none';
+                all.forEach((b, idx) => { if (idx === q.c) { b.style.background = "#4cd137"; b.style.color = "white"; } else if (idx === i) { b.style.background = "#ff4d4d"; b.style.color = "white"; } });
+                if(i === q.c) { if(type === 'shield') shields[turnIdx] = true; if(type !== 'survival' && type !== 'shield' && type !== 'steal') scores[turnIdx] += currentStake; } else { if(type === 'survival') scores[turnIdx] = 0; }
+                document.getElementById('info-box').style.display = 'block'; document.getElementById('info-box').innerText = q.info;
+                const nBtn = document.getElementById('next-btn'); nBtn.style.display = 'block'; nBtn.onclick = (type === 'steal' && i === q.c) ? showStealList : closeModal;
+                if(!isSpec) { totalQuestionsAsked++; document.getElementById('q-count').innerText = totalQuestionsAsked; } updateUI();
+            }; opt.appendChild(btn);
+        });
+    }
+
+    function useHelp() {
+        const qt = document.getElementById('q-text'), orig = qt.innerText;
+        if(scores[turnIdx] >= 100) { scores[turnIdx] -= 100; updateUI(); document.getElementById('help-btn').style.display = 'none'; qt.innerHTML = `<span style="color: #6c5ce7;">🤝 ПОМОЩТА Е АКТИВИРАНА!</span><br>${orig}`; } else { qt.innerHTML = `<span style="color: #ff4d4d;">❌ НЯМАТЕ ТОЧКИ!</span><br>${orig}`; setTimeout(() => { qt.innerText = orig; }, 2000); }
+    }
+
+    function showStealList() {
+        document.getElementById('info-box').style.display = 'none'; document.getElementById('next-btn').style.display = 'none';
+        const qt = document.getElementById('q-text'); qt.innerText = "Избери от кого да вземеш 200т.:";
+        const opt = document.getElementById('options'); opt.innerHTML = '';
+        teamNames.forEach((n, i) => {
+            if(i !== turnIdx) {
+                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = `${n} (${scores[i]}т.)`;
+                btn.onclick = () => { if(shields[i]) { qt.innerHTML = `<span style="color: #ff4d4d;">🛡️ ${n} ИМАТ ЗАЩИТА!</span>`; shields[i] = false; opt.innerHTML = ''; const fb = document.createElement('button'); fb.className = 'option-btn'; fb.innerText = "ПРОДЪЛЖИ"; fb.onclick = closeModal; opt.appendChild(fb); } else { scores[i] -= 200; scores[turnIdx] += 200; closeModal(); } };
+                opt.appendChild(btn);
+            }
+        });
+    }
+
+    function startTimer() { timeLeft = 30; document.getElementById('timer-display').innerText = `0:${timeLeft}`; timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = `0:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`; if(timeLeft <= 0) { clearInterval(timerInterval); scores[turnIdx] = 0; closeModal(); } }, 1000); }
+
+    function closeModal() { 
+        document.getElementById('modal-overlay').style.display = 'none'; 
+        turnIdx = (turnIdx + 1) % 4; 
+        updateUI(); 
+        document.getElementById('main-action-btn').disabled = false; 
+        
+        // Автоматично приключване само ако ВСИЧКИ въпроси (нормални + трудни) свършат
+        if(poolNormal.length === 0 && poolHard.length === 0) { 
+            document.getElementById('main-action-btn').innerText = "КЪМ ФИНАЛА"; 
+            document.getElementById('main-action-btn').onclick = endGame; 
+        } 
+    }
+
+    function updateUI() { teamNames.forEach((_, i) => { document.getElementById(`score-${i}`).innerText = scores[i]; document.getElementById(`team-${i}`).classList.toggle('active', i === turnIdx); document.getElementById(`shield-${i}`).innerHTML = shields[i] ? '🛡️' : ''; }); document.getElementById('turn-indicator').innerText = `РЕД Е НА: ${teamNames[turnIdx]}`; }
+
+    function endGame() {
+        document.getElementById('end-screen').style.display = 'flex';
+        let sorted = teamNames.map((n, i) => ({name: n, score: scores[i], id: i})).sort((a, b) => b.score - a.score);
+        const colors = ["#ff4d4d", "#4cd137", "#00a8ff", "#fbc531"];
+        document.getElementById('podium').innerHTML = `
+            <div class="step" style="height: 65%; background: ${colors[sorted[1].id]}; order: 1;"><div class="podium-score">${sorted[1].score}</div><div class="podium-name">${sorted[1].name}</div><div class="trophy">🥈</div></div>
+            <div class="step" style="height: 95%; background: ${colors[sorted[0].id]}; order: 2;"><div class="podium-score">${sorted[0].score}</div><div class="podium-name">${sorted[0].name}</div><div class="trophy">🏆</div></div>
+            <div class="step" style="height: 45%; background: ${colors[sorted[2].id]}; order: 3;"><div class="podium-score">${sorted[2].score}</div><div class="podium-name">${sorted[2].name}</div><div class="trophy">🥉</div></div>`;
+    }
+</script>
+</body>
+</html>
