@@ -181,7 +181,7 @@
             <div id="team-2" class="team-card blue"><div class="team-name">ТРАКИЯ <span id="shield-2"></span></div><div id="score-2" class="team-score">0</div></div>
             <div id="team-3" class="team-card yellow"><div class="team-name">ПИРИН <span id="shield-3"></span></div><div id="score-3" class="team-score">0</div></div>
         </div>
-        <div id="round-info" style="position: absolute; bottom: 20px; font-weight: bold; color: #999;">Въпроси: <span id="q-count">0</span> / 40</div>
+        <div id="round-info" style="position: absolute; bottom: 20px; font-weight: bold; color: #999;">Въпроси: <span id="q-count">0</span> / 80</div>
     </div>
 
     <div id="modal-overlay">
@@ -377,49 +377,112 @@
 
     function handleSector(s) {
         currentStake = s.val;
-        const modal = document.getElementById('modal-overlay'), qText = document.getElementById('q-text'), opt = document.getElementById('options'), nextBtn = document.getElementById('next-btn'), helpBtn = document.getElementById('help-btn'), infoBox = document.getElementById('info-box');
-        modal.style.display = 'flex'; opt.innerHTML = ''; nextBtn.style.display = 'none'; infoBox.style.display = 'none'; document.getElementById('timer-display').style.display = 'none';
-        helpBtn.style.display = 'block'; helpBtn.onclick = useHelp;
+        const modal = document.getElementById('modal-overlay'), 
+              qText = document.getElementById('q-text'), 
+              opt = document.getElementById('options'), 
+              nextBtn = document.getElementById('next-btn'), 
+              helpBtn = document.getElementById('help-btn'), 
+              infoBox = document.getElementById('info-box');
+        
+        modal.style.display = 'flex'; 
+        opt.innerHTML = ''; 
+        nextBtn.style.display = 'none'; 
+        infoBox.style.display = 'none'; 
+        document.getElementById('timer-display').style.display = 'none';
+        helpBtn.style.display = 'block'; 
+        helpBtn.onclick = useHelp;
 
         if(s.val === 'B') {
             helpBtn.style.display = 'none';
             if(shields[turnIdx]) {
-                qText.innerHTML = "🛡️ ЗАЩИТАТА ВИ СПАСИ ОТ БАНКРУТ!"; shields[turnIdx] = false; nextBtn.style.display = 'block'; nextBtn.onclick = closeModal;
+                qText.innerHTML = "🛡️ ЗАЩИТАТА ВИ СПАСИ ОТ БАНКРУТ!"; 
+                shields[turnIdx] = false; 
+                nextBtn.style.display = 'block'; 
+                nextBtn.onclick = closeModal;
             } else {
                 qText.innerText = "🚨 БАНКРУТ! Какво избирате?";
-                opt.innerHTML = `<button class="option-btn" onclick="scores[turnIdx]=0; closeModal();">ГУБЯ ВСИЧКО</button><button class="option-btn" onclick="survivalChallenge()">СПАСЕНИЕ СЪС СЛОЖЕН ВЪПРОС</button>`;
+                // ВАЖНО: Тук са двата бутона за избор
+                opt.innerHTML = `
+                    <button class="option-btn" onclick="scores[turnIdx]=0; closeModal();">ГУБЯ ВСИЧКО</button>
+                    <button class="option-btn" onclick="survivalChallenge()">СПАСЕНИЕ СЪС СЛОЖЕН ВЪПРОС</button>
+                `;
             }
-        } else if(s.val === 'T') { qText.innerText = "КРАДЕЦ! Отговори на въпрос, за да откраднеш!"; showQuestion(true, 'steal');
-        } else if(s.val === 'S') { qText.innerText = "ЗАЩИТА! Отговори на въпрос, за да получиш щит!"; showQuestion(true, 'shield');
-        } else { showQuestion(); }
+        } else if(s.val === 'T') { 
+            qText.innerText = "КРАДЕЦ! Отговори на въпрос, за да откраднеш!"; 
+            showQuestion(true, 'steal');
+        } else if(s.val === 'S') { 
+            qText.innerText = "ЗАЩИТА! Отговори на въпрос, за да получиш щит!"; 
+            showQuestion(true, 'shield');
+        } else { 
+            showQuestion(); 
+        }
     }
 
     function survivalChallenge() { document.getElementById('options').innerHTML = ''; document.getElementById('timer-display').style.display = 'block'; document.getElementById('help-btn').style.display = 'block'; startTimer(); showQuestion(true, 'survival'); }
 
     function showQuestion(isSpec = false, type = '') {
+        // Проверяваме дали трябва да дадем труден въпрос (poolHard) или обикновен (poolNormal)
         let pool = (type === 'survival') ? poolHard : poolNormal;
+        
+        const qText = document.getElementById('q-text');
+        const opt = document.getElementById('options');
+        const nextBtn = document.getElementById('next-btn');
+
         if(pool.length === 0) { 
-             // Ако текущият пул свърши, приключваме играта
-             document.getElementById('q-text').innerText = "Всички въпроси от тази категория са изчерпани!";
-             document.getElementById('next-btn').style.display = 'block';
-             document.getElementById('next-btn').onclick = endGame;
+             qText.innerText = "Всички въпроси от тази категория са изчерпани!";
+             nextBtn.style.display = 'block';
+             nextBtn.onclick = (type === 'survival') ? closeModal : endGame;
              return;
         }
-        const rIdx = Math.floor(Math.random() * pool.length); const q = pool[rIdx]; pool.splice(rIdx, 1);
-        document.getElementById('q-text').innerText = q.q; const opt = document.getElementById('options'); opt.innerHTML = '';
+
+        const rIdx = Math.floor(Math.random() * pool.length); 
+        const q = pool[rIdx]; 
+        pool.splice(rIdx, 1);
+
+        qText.innerText = q.q; 
+        opt.innerHTML = '';
+
         q.a.forEach((txt, i) => {
-            const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = txt;
+            const btn = document.createElement('button'); 
+            btn.className = 'option-btn'; 
+            btn.innerText = txt;
             btn.onclick = () => {
-                clearInterval(timerInterval); const all = document.querySelectorAll('.option-btn'); all.forEach(b => b.disabled = true); document.getElementById('help-btn').style.display = 'none';
-                all.forEach((b, idx) => { if (idx === q.c) { b.style.background = "#4cd137"; b.style.color = "white"; } else if (idx === i) { b.style.background = "#ff4d4d"; b.style.color = "white"; } });
-                if(i === q.c) { if(type === 'shield') shields[turnIdx] = true; if(type !== 'survival' && type !== 'shield' && type !== 'steal') scores[turnIdx] += currentStake; } else { if(type === 'survival') scores[turnIdx] = 0; }
-                document.getElementById('info-box').style.display = 'block'; document.getElementById('info-box').innerText = q.info;
-                const nBtn = document.getElementById('next-btn'); nBtn.style.display = 'block'; nBtn.onclick = (type === 'steal' && i === q.c) ? showStealList : closeModal;
-                if(!isSpec) { totalQuestionsAsked++; document.getElementById('q-count').innerText = totalQuestionsAsked; } updateUI();
-            }; opt.appendChild(btn);
+                clearInterval(timerInterval); 
+                const all = document.querySelectorAll('.option-btn');
+                all.forEach(b => b.disabled = true); 
+                document.getElementById('help-btn').style.display = 'none';
+
+                all.forEach((b, idx) => { 
+                    if (idx === q.c) { b.style.background = "#4cd137"; b.style.color = "white"; } 
+                    else if (idx === i) { b.style.background = "#ff4d4d"; b.style.color = "white"; } 
+                });
+
+                if(i === q.c) { 
+                    // При верен отговор
+                    if(type === 'shield') shields[turnIdx] = true; 
+                    // Ако не е специален въпрос, добавяме точките от сектора
+                    if(!['survival', 'shield', 'steal'].includes(type)) {
+                        scores[turnIdx] += currentStake; 
+                    }
+                } else { 
+                    // При грешен отговор на спасителен въпрос - губи точките
+                    if(type === 'survival') scores[turnIdx] = 0; 
+                }
+
+                document.getElementById('info-box').style.display = 'block'; 
+                document.getElementById('info-box').innerText = q.info;
+                nextBtn.style.display = 'block'; 
+                nextBtn.onclick = (type === 'steal' && i === q.c) ? showStealList : closeModal;
+                
+                if(!isSpec) { 
+                    totalQuestionsAsked++; 
+                    document.getElementById('q-count').innerText = totalQuestionsAsked; 
+                } 
+                updateUI();
+            }; 
+            opt.appendChild(btn);
         });
     }
-
     function useHelp() {
         const qt = document.getElementById('q-text'), orig = qt.innerText;
         if(scores[turnIdx] >= 100) { scores[turnIdx] -= 100; updateUI(); document.getElementById('help-btn').style.display = 'none'; qt.innerHTML = `<span style="color: #6c5ce7;">🤝 ПОМОЩТА Е АКТИВИРАНА!</span><br>${orig}`; } else { qt.innerHTML = `<span style="color: #ff4d4d;">❌ НЯМАТЕ ТОЧКИ!</span><br>${orig}`; setTimeout(() => { qt.innerText = orig; }, 2000); }
